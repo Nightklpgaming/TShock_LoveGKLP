@@ -3,7 +3,7 @@ A simple plugin for players to have love ( best use for valentines )
 
 
 ## Love Concept Info from /love help
-> hello there in order to register your gender do [c/ffffff:( /love register <your gender> )
+> hello there in order to register your gender do ( /love register <your gender> )
 if you do not permission to register that means you need a permission to a staff to approve your gender!
 
 ### sub commands
