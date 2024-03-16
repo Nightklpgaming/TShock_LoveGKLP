@@ -7,7 +7,7 @@ A simple plugin for players to have love ( best use for valentines )
 if you do not permission to register that means you need a permission to a staff to approve your gender!
 
 ### sub commands
-**+player info:** let's you get information of a player who already register <br />
+**+playerinfo:** let's you get information of a player who already register <br />
 **+yes:** accepts someone's pending request <br />
 **+no:** rejects someone's pending request <br />
 **+kiss:** sent a request to a player you want to kiss <br />
