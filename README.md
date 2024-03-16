@@ -8,9 +8,9 @@ if you do not permission to register that means you need a permission to a staff
 
 [ sub commands ]
 +player info: [c/ffffff:let's you get information of a player who already register
-+yes: [c/ffffff:accepts someone's pending request
-+no: rejects someone's pending request
-+kiss: sent a request to a player you want to kiss
+\n+yes: [c/ffffff:accepts someone's pending request
+\n+no: rejects someone's pending request
+\n+kiss: sent a request to a player you want to kiss
 [ finding your love ]
 '/findlove <playername>' [c/ffffff:sent's a request to someone you want to be your partner...
 '/loveaccept' [c/ffffff:accepts someone pending request to be your partner...
