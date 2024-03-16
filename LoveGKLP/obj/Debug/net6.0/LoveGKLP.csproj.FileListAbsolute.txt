@@ -1,0 +1,13 @@
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\bin\Debug\net6.0\HttpServer.dll
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\bin\Debug\net6.0\LoveGKLP.deps.json
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\bin\Debug\net6.0\LoveGKLP.dll
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\bin\Debug\net6.0\LoveGKLP.pdb
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.csproj.AssemblyReference.cache
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.GeneratedMSBuildEditorConfig.editorconfig
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.AssemblyInfoInputs.cache
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.AssemblyInfo.cs
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.csproj.CoreCompileInputs.cache
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.dll
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\refint\LoveGKLP.dll
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\LoveGKLP.pdb
+D:\my_Terraria_Plugins\LoveGKLP\LoveGKLP\obj\Debug\net6.0\ref\LoveGKLP.dll
