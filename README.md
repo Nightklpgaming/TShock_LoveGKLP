@@ -13,8 +13,8 @@ if you do not permission to register that means you need a permission to a staff
 **+kiss:** sent a request to a player you want to kiss <br />
 <br />
 ### finding your love
-**'/findlove <playername>'** [c/ffffff:sent's a request to someone you want to be your partner... <br />
-**'/loveaccept'** [c/ffffff:accepts someone pending request to be your partner... <br />
+**'/findlove <playername>'** sent's a request to someone you want to be your partner... <br />
+**'/loveaccept'** accepts someone pending request to be your partner... <br />
 **'/lovereject'** rejects someone pending request to be your partner... <br />
 <br />
 ### partner commands
