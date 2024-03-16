@@ -188,7 +188,7 @@ namespace LoveGKLP
                 "\nif you do not permission to register that means you need a permission to a staff to approve your gender!" +
                 "\n" +
                 "\n\n[c/e210c2:[ sub commands ][c/e210c2:]]" +
-                "\n+player info: [c/ffffff:let's you get information of a player who already register]" +
+                "\n+playerinfo: [c/ffffff:let's you get information of a player who already register]" +
                 "\n+yes: [c/ffffff:accepts someone's pending request ]" +
                 "\n+no: [c/ffffff:rejects someone's pending request ]" +
                 "\n+kiss: [c/ffffff: sent a request to a player you want to kiss]" +
