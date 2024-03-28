@@ -7,12 +7,12 @@ A simple plugin for players to have love ( best use for valentines )
 if you do not permission to register that means you need a permission to a staff to approve your gender!
 
 ### sub commands
-**+playerinfo:** let's you get information of a player who already register <br />
 **+yes:** accepts someone's pending request <br />
 **+no:** rejects someone's pending request <br />
-**+kiss:** sent a request to a player you want to kiss <br />
+**+kiss:** sent a request to a player you want to kiss ( if you have a partner you can only kiss him/her ) <br />
 <br />
 ### finding your love
+**'/loveplayerinfo <playername>'** get information of a player who already register <br />
 **'/findlove <playername>'** sent's a request to someone you want to be your partner... <br />
 **'/loveaccept'** accepts someone pending request to be your partner... <br />
 **'/lovereject'** rejects someone pending request to be your partner... <br />
@@ -33,7 +33,7 @@ if you do not permission to register that means you need a permission to a staff
 <br />
 # permissions
 ### Main
-`lovegklp.love` /love <br />
+`lovegklp.love` /love and /loveplayerinfo<br />
 <br />
 ### Default
 `lovegklp.default.findlove` /findlove <br />
