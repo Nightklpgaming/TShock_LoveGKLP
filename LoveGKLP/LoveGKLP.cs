@@ -5,18 +5,23 @@ using Microsoft.Xna.Framework;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 
-using IL.Terraria.GameContent.UI;
+//system
 using MySqlX.XDevAPI;
 using System;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
+//terraria
 using Terraria;
 using TerrariaApi.Server;
+using IL.Terraria.GameContent.UI;
+using On.Terraria.GameContent.UI;
+using Terraria.GameContent.UI;
+//tshock
 using TShockAPI;
 using TShockAPI.Hooks;
 using TShockAPI.Net;
-using System.Reflection.Metadata.Ecma335;
-using On.Terraria.GameContent.UI;
-using Terraria.GameContent.UI;
+
+
 
 namespace LoveGKLP
 {
@@ -30,7 +35,7 @@ namespace LoveGKLP
 
         public override string Description => "A simple plugin for players to have love ( best use for valentines )";
 
-        public override Version Version => new Version(1, 0, 0);
+        public override Version Version => new Version(1, 0, 1);
         #endregion
 
         private IDbConnection GetDatabase;
@@ -66,6 +71,7 @@ namespace LoveGKLP
             #region commands
             //main
             Commands.ChatCommands.Add(new Command("lovegklp.love", MainCommand, "love"));
+            Commands.ChatCommands.Add(new Command("lovegklp.love", PlayerInfo, "loveplayerinfo"));
             Commands.ChatCommands.Add(new Command("lovegklp.default.findlove", GetLove, "findlove"));
 
             //admin
@@ -113,7 +119,7 @@ namespace LoveGKLP
             }
             foreach (var partner in ActivePartners)
             {
-                CoupleBuff(partner.Key, partner.Value);
+                CoupleBuff(partner.Key.Split("_")[0], partner.Key.Split("_")[1], partner.Value);
             }
             #endregion
         }
@@ -126,9 +132,9 @@ namespace LoveGKLP
                 Partner partner = DB.GetPartnerByName(Main.player[args.Who].name);
                 foreach (var check in ActivePartners)
                 {
-                    if (check.Key == partner.Player1) return;
+                    if (check.Key.Split("_")[0] == partner.Player1) return;
                 }
-                ActivePartners.Add(partner.Player1, partner.Player2);
+                ActivePartners.Add(partner.Player1 + "_" + partner.Player2, partner.Type);
             } catch (NullReferenceException) { }
             #endregion
         }
@@ -141,20 +147,22 @@ namespace LoveGKLP
                 Partner partner = DB.GetPartnerByName(Main.player[args.Who].name);
                 foreach (var check in ActivePartners)
                 {
-                    if (check.Key == partner.Player1)
-                    {
-                        var find1 = TSPlayer.FindByNameOrID(partner.Player2);
-                        if (find1.Count == 0)
-                        {
-                            ActivePartners.Remove(partner.Player1);
-                        }
-                    }
-                    if (check.Value == partner.Player2)
+                    if (check.Key.Split("_")[0] == partner.Player1)
                     {
                         var find1 = TSPlayer.FindByNameOrID(partner.Player1);
-                        if (find1.Count == 0)
+                        var find2 = TSPlayer.FindByNameOrID(partner.Player2);
+                        if (find1.Count == 0 && find2.Count == 0)
                         {
-                            ActivePartners.Remove(partner.Player1);
+                            ActivePartners.Remove(check.Key);
+                        }
+                    }
+                    if (check.Key.Split("_")[1] == partner.Player2)
+                    {
+                        var find1 = TSPlayer.FindByNameOrID(partner.Player1);
+                        var find2 = TSPlayer.FindByNameOrID(partner.Player2);
+                        if (find1.Count == 0 && find2.Count == 0)
+                        {
+                            ActivePartners.Remove(check.Key);
                         }
                     }
                 }
@@ -188,12 +196,12 @@ namespace LoveGKLP
                 "\nif you do not permission to register that means you need a permission to a staff to approve your gender!" +
                 "\n" +
                 "\n\n[c/e210c2:[ sub commands ][c/e210c2:]]" +
-                "\n+playerinfo: [c/ffffff:let's you get information of a player who already register]" +
                 "\n+yes: [c/ffffff:accepts someone's pending request ]" +
                 "\n+no: [c/ffffff:rejects someone's pending request ]" +
-                "\n+kiss: [c/ffffff: sent a request to a player you want to kiss]" +
+                "\n+kiss: [c/ffffff: sent a request to a player you want to kiss ( if you have a partner you can only kiss him/her )]" +
                 "\n" +
                 "\n\n[c/e210c2:[ finding your love ][c/e210c2:]]" +
+                "\n'/loveplayerinfo <playername>' [c/ffffff:get information of a player who already register]" +
                 "\n'/findlove <playername>' [c/ffffff:sent's a request to someone you want to be your partner...]" +
                 "\n'/loveaccept' [c/ffffff:accepts someone pending request to be your partner...]" +
                 "\n'/lovereject' [c/ffffff:rejects someone pending request to be your partner...]" +
@@ -264,67 +272,6 @@ namespace LoveGKLP
                     return;
                     #endregion
 
-                case "playerinfo":
-                    #region code
-                    if (args.Parameters.Count == 1)
-                    {
-                        args.Player.SendErrorMessage("please specify a player!" +
-                            "\nproper syntax: /love playerinfo <playername>");
-                        return;
-                    }
-                    string getname = args.Parameters[1];
-                    var getplayer3 = TSPlayer.FindByNameOrID(args.Parameters[1]);
-                    if (getplayer3.Count > 0)
-                    {
-
-                        getname = getplayer3[0].Name;
-                    }
-                    
-
-                    try
-                    {
-                        usergklp playergklp = DB.GetPlayerByName(getname);
-
-                        string[] text = { "n/a", $"[c/8cff1f:{playergklp.Name} is Single]" };
-                        if (playergklp.Gender == "male") text[0] = "[c/001ee6:Male]";
-                        if (playergklp.Gender == "female") text[0] = "[c/f813ac:Female]";
-
-                        try
-                        {
-                            Partner partner = DB.GetPartnerByName(playergklp.Name);
-                            string[] genders = { "n/a", "n/a" };
-
-                            usergklp user1 = DB.GetPlayerByName(partner.Player1);
-                            if (user1.Gender == "male") genders[0] = $"[c/304af8:{partner.Player1} (B)]";
-                            if (user1.Gender == "female") genders[0] = $"[c/fa40bc:{partner.Player1} (G)]";
-                            usergklp user2 = DB.GetPlayerByName(partner.Player2);
-                            if (user2.Gender == "male") genders[1] = $"[c/304af8:{partner.Player2} (B)]";
-                            if (user2.Gender == "female") genders[1] = $"[c/fa40bc:{partner.Player2} (G)]";
-
-
-                            text[1] = $"{genders[0]} and {genders[1]} [c/b613f8:are {partner.Type}]";
-
-                        } catch (NullReferenceException) { }
-                        catch (Exception e) { Console.WriteLine(e); }
-
-                        executer.SendMessage("[i:58] Player Info [i:58]" +
-                            $"\nName: [c/ffffff:{playergklp.Name}]" +
-                            $"\nGender: {text[0]}" +
-                            $"\n--[Status]--" +
-                            $"\n{text[1]}", Color.Yellow);
-
-                    } catch (NullReferenceException)
-                    {
-                        executer.SendErrorMessage("Invalid Player!");
-                        return;
-                    } catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                    }
-
-                    return;
-                    #endregion
-
                 case "register":
                     #region code
                     if (!executer.HasPermission("lovegklp.register"))
@@ -388,20 +335,11 @@ namespace LoveGKLP
                             return;
                         }
 
+                        Actionawait.Add($"{couplename}_kiss", executer.Name);
 
-                        foreach (var check in Actionawait)
-                        {
-                            if (check.Key.Split("_")[0] == getcouple[0].Name && check.Value == "request")
-                            {
-                                executer.SendErrorMessage("your partner is on pending request...");
-                                return;
-                            }
-                        }
-
-                        Actionawait.Add($"{getcouple[0].Name}_request_kiss", executer.Name);
-                        executer.SendMessage("[i:58] request sent!", Color.Pink);
-                        getcouple[0].SendMessage($"[i:58] {executer.Name} wants give you a kiss" +
-                            $"\n[c/3cdb02:( /love yes ) if yes] [c/db6402:( /love no ) if no]", Color.Pink);
+                        executer.SendMessage("[i:58] get closer to kiss your partner!", Color.Pink);
+                        getcouple[0].SendMessage($"[i:58] {executer.Name} wants to give you a kiss" +
+                            $"\ngo closer to your partner!", Color.Pink);
                     } catch (NullReferenceException)
                     {
 
@@ -417,6 +355,13 @@ namespace LoveGKLP
                             executer.SendErrorMessage("Invalid Player!");
                             return;
                         }
+
+                        try
+                        {
+                            Partner check = DB.GetPartnerByName(getplayer4[0].Name);
+                            executer.SendErrorMessage($"{getplayer4[0].Name} already has a partner!");
+                            return;
+                        } catch (NullReferenceException) { }
 
                         foreach (var check in Actionawait)
                         {
@@ -650,6 +595,7 @@ namespace LoveGKLP
 
                                     if (DB.SetPartnerType(getpartner.Player1, "married"))
                                     {
+                                        TSPlayer.All.SendMessage($"[i:29] [c/ffffff: {getpartner.Player1} and {getpartner.Player2}] are offically married!", Color.DeepPink);
                                         executer.SendMessage($"[i:29] Set as ( {getpartner.Player1} X {getpartner.Player2} ) as Married!", Color.DeepPink);
                                     }
                                     else
@@ -668,6 +614,7 @@ namespace LoveGKLP
 
                                     if (DB.SetPartnerType(getpartner.Player1, "couple"))
                                     {
+                                        TSPlayer.All.SendMessage($"[i:29] Seems [c/ffffff: {getpartner.Player1} and {getpartner.Player2}] are not married!", Color.DeepPink);
                                         executer.SendMessage($"[i:29] Set as ( {getpartner.Player1} X {getpartner.Player2} ) as couples", Color.DeepPink);
                                     } else
                                     {
@@ -738,6 +685,76 @@ namespace LoveGKLP
                     return;
             }
                 #endregion
+        }
+
+        private void PlayerInfo(CommandArgs args)
+        {
+            #region code
+            TSPlayer executer = args.Player;
+            if (args.Parameters.Count == 0)
+            {
+                args.Player.SendErrorMessage("please specify a player!" +
+                    "\nproper syntax: /loveplayerinfo <playername>");
+                return;
+            }
+
+            string targetname = string.Join(" ", args.Parameters.ToArray(), 0, args.Parameters.Count);
+
+            var gettarget = TSPlayer.FindByNameOrID(targetname);
+            if (gettarget.Count > 0)
+            {
+                targetname = gettarget[0].Name;
+            }
+
+
+            try
+            {
+                usergklp playergklp = DB.GetPlayerByName(targetname);
+
+                string[] text = { "n/a", $"[c/8cff1f:{playergklp.Name} is Single]" };
+                if (playergklp.Gender == "male") text[0] = "[c/001ee6:Male]";
+                if (playergklp.Gender == "female") text[0] = "[c/f813ac:Female]";
+
+                try
+                {
+                    Partner partner = DB.GetPartnerByName(playergklp.Name);
+                    string[] genders = { "n/a", "n/a" };
+
+                    usergklp user1 = DB.GetPlayerByName(partner.Player1);
+                    if (user1.Gender == "male") genders[0] = $"[c/304af8:{partner.Player1} (B)]";
+                    if (user1.Gender == "female") genders[0] = $"[c/fa40bc:{partner.Player1} (G)]";
+                    usergklp user2 = DB.GetPlayerByName(partner.Player2);
+                    if (user2.Gender == "male") genders[1] = $"[c/304af8:{partner.Player2} (B)]";
+                    if (user2.Gender == "female") genders[1] = $"[c/fa40bc:{partner.Player2} (G)]";
+
+
+                    text[1] = $"{genders[0]} and {genders[1]} [c/b613f8:are {partner.Type}]";
+
+                }
+                catch (NullReferenceException) { }
+
+                executer.SendMessage("[i:58] Player Info [i:58]" +
+                    $"\nName: [c/ffffff:{playergklp.Name}]" +
+                    $"\nGender: {text[0]}" +
+                    $"\n--[Status]--" +
+                    $"\n{text[1]}", Color.Yellow);
+
+            }
+            catch (NullReferenceException)
+            {
+                if (gettarget.Count > 0)
+                {
+                    executer.SendErrorMessage("This player hasn't been registered yet!");
+                } else
+                {
+                    executer.SendErrorMessage("Invalid Player!");
+                }
+                
+                return;
+            }
+
+            return;
+            #endregion
         }
 
         private void GetLove(CommandArgs args)
@@ -907,16 +924,16 @@ namespace LoveGKLP
                 if (getvalue.Key == executer.Name)
                 {
                     DB.NewPartner(executer.Name, getvalue.Value);
-                    ActivePartners.Add(executer.Name, getvalue.Value);
-                    NetMessage.SendData((int)PacketTypes.CreateCombatText, -1, -1, Terraria.Localization.NetworkText.FromLiteral($"{getvalue.Value} is now my love <3"), (int)executer.TPlayer.Center.X, (int)executer.TPlayer.Center.Y - 60f, 219, 2, 164, 255);
-                    executer.SendMessage($"[i:58] [c/ffffff:{getvalue.Value}] is your partner gratz!", Color.Pink);
+                    ActivePartners.Add(executer.Name + "_" + getvalue.Value, "couples");
+                    TSPlayer.All.SendData(PacketTypes.CreateCombatTextExtended, $"{getvalue.Value} is now my love <3", (int)Color.Pink.packedValue, executer.X, executer.Y);
+                    executer.SendMessage($"[i:58] [c/ffffff:{getvalue.Value}] is your partner congratulations!", Color.Pink);
                     var partnerget = TSPlayer.FindByNameOrID(getvalue.Value);
                     if (partnerget.Count == 0)
                     {
                         return;
                     }
-                    NetMessage.SendData((int)PacketTypes.CreateCombatText, -1, -1, Terraria.Localization.NetworkText.FromLiteral($"{executer.Name} is now my love <3"), (int)partnerget[0].TPlayer.Center.X, (int)partnerget[0].TPlayer.Center.Y - 60f, 219, 2, 164, 255);
-                    partnerget[0].SendMessage($"[i:58] [c/ffffff:{executer.Name}] Accepted you gratz!", Color.Pink);
+                    TSPlayer.All.SendData(PacketTypes.CreateCombatTextExtended, $"{executer.Name} is now my love <3", (int)Color.Pink.packedValue, partnerget[0].X, partnerget[0].Y);
+                    partnerget[0].SendMessage($"[i:58] [c/ffffff:{executer.Name}] Accepted you congratulations!", Color.Pink);
                     return;
                 }
             }
@@ -1159,82 +1176,94 @@ namespace LoveGKLP
         #endregion
 
         #region Functions
-        public void CoupleBuff(string BF, string GF)
+        public void CoupleBuff(string Player1, string Player2, string Type)
         {
-            var foundBF = TSPlayer.FindByNameOrID(BF);
-            if (foundBF.Count == 0)
+            var foundP1 = TSPlayer.FindByNameOrID(Player1);
+            if (foundP1.Count == 0)
             {
                 return;
             }
-            TSPlayer B = foundBF[0];
+            TSPlayer P1 = foundP1[0];
 
-            var foundGF = TSPlayer.FindByNameOrID(GF);
-            if (foundGF.Count == 0)
+            var foundP2 = TSPlayer.FindByNameOrID(Player2);
+            if (foundP2.Count == 0)
             {
                 return;
             }
-            TSPlayer G = foundGF[0];
+            TSPlayer P2 = foundP2[0];
 
-            if (!B.IsLoggedIn || !G.IsLoggedIn)
+            if (!P1.IsLoggedIn || !P2.IsLoggedIn)
             {
                 return;
             }
 
-            float num1 = ((int)B.TPlayer.position.X/16) - ((int)G.TPlayer.position.X/16);
-            float num2 = ((int)B.TPlayer.position.Y/16) - ((int)G.TPlayer.position.Y/16);
-            if ((float)Math.Sqrt(num1 * num1 + num2 * num2) <= 14 )// if those couples are near 14 blocks to each other
+            float num1 = ((int)P1.TPlayer.position.X/16) - ((int)P2.TPlayer.position.X/16);
+            float num2 = ((int)P1.TPlayer.position.Y/16) - ((int)P2.TPlayer.position.Y/16);
+            if ((float)Math.Sqrt(num1 * num1 + num2 * num2) <= 30 )// if those couples are near 30 blocks to each other
             {
-                B.SetBuff(119, 180);//love struck [ does not nothing < its a design > ]
-                G.SetBuff(119, 180);
-                B.SetBuff(2, 180);//regeneration
-                G.SetBuff(2, 180);
-                Actionawait.Remove(B.Name);
-                Actionawait.Remove(G.Name);
+                P1.SetBuff(119, 180);//love struck [ does not nothing < its a design > ]
+                P2.SetBuff(119, 180);
+                P1.SetBuff(2, 180);//regeneration
+                P2.SetBuff(2, 180);
+                /*
+                Actionawait.Remove(P1.Name);
+                Actionawait.Remove(P2.Name);
+                */
+            } else if (Type == "married" && (float)Math.Sqrt(num1 * num1 + num2 * num2) <= 40)// if those married people are near 50 blocks to each other
+            {
+                P1.SetBuff(119, 180);//love struck [ does not nothing < its a design > ]
+                P2.SetBuff(119, 180);
+                P1.SetBuff(2, 180);//regeneration
+                P2.SetBuff(2, 180);
             }
         }
 
-        public void KissAction(string BF, string GF)
+        public void KissAction(string Player1, string Player2)
         {
-            var foundBF = TSPlayer.FindByNameOrID(BF);
-            if (foundBF.Count == 0)
+            var foundP1 = TSPlayer.FindByNameOrID(Player1);
+            if (foundP1.Count == 0)
             {
                 return;
             }
-            TSPlayer B = foundBF[0];
+            TSPlayer P1 = foundP1[0];
 
-            var foundGF = TSPlayer.FindByNameOrID(GF);
-            if (foundGF.Count == 0)
+            var foundP2 = TSPlayer.FindByNameOrID(Player2);
+            if (foundP2.Count == 0)
             {
                 return;
             }
-            TSPlayer G = foundGF[0];
+            TSPlayer P2 = foundP2[0];
 
-            if (!B.IsLoggedIn || !G.IsLoggedIn)
+            if (!P1.IsLoggedIn || !P2.IsLoggedIn)
             {
                 return;
             }
 
-            float num1 = ((int)B.TPlayer.position.X / 16) - ((int)G.TPlayer.position.X / 16);
-            float num2 = ((int)B.TPlayer.position.Y / 16) - ((int)G.TPlayer.position.Y / 16);
+            float num1 = ((int)P1.TPlayer.position.X / 16) - ((int)P2.TPlayer.position.X / 16);
+            float num2 = ((int)P1.TPlayer.position.Y / 16) - ((int)P2.TPlayer.position.Y / 16);
             if ((float)Math.Sqrt(num1 * num1 + num2 * num2) <= 3)// if those players are near 3 blocks to each other
             {
-                Actionawait.Remove($"{B.Name}_kiss");
-                B.SetBuff(119, 300);//love struck [ heart particles on player ]
-                G.SetBuff(119, 300);
+                Actionawait.Remove($"{P1.Name}_kiss");
+                P1.SetBuff(119, 300);//love struck [ heart particles on player ]
+                P2.SetBuff(119, 300);
                 Thread.Sleep(1000);
-                B.SetBuff(22, 180);//darkness [ to close their eyes ]
-                G.SetBuff(22, 180);
-                B.SetBuff(160, 180);//dazed [ reduce their movement speed significantly ]
-                G.SetBuff(160, 180);
-                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 88+emoteid, 1, B.TPlayer.whoAmI, 180, 88);
+                P1.SetBuff(22, 180);//darkness [ to close their eyes ]
+                P2.SetBuff(22, 180);
+                P1.SetBuff(160, 180);//dazed [ reduce their movement speed significantly ]
+                P2.SetBuff(160, 180);
+                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 88+emoteid, 1, P1.TPlayer.whoAmI, 180, 88);
                 emoteid++;
-                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 88+emoteid, 1, G.TPlayer.whoAmI, 180, 88);
+                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 88+emoteid, 1, P2.TPlayer.whoAmI, 180, 88);
                 emoteid++;
                 Thread.Sleep(3000);
-                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 0+emoteid, 1, B.TPlayer.whoAmI, 300, 0);
+                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 0+emoteid, 1, P1.TPlayer.whoAmI, 300, 0);
                 emoteid++;
-                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 0+emoteid, 1, G.TPlayer.whoAmI, 300, 0);
+                TSPlayer.All.SendData(PacketTypes.EmoteBubble, null, 0+emoteid, 1, P2.TPlayer.whoAmI, 300, 0);
                 emoteid++;
+                if (emoteid >= 50)
+                {
+                    emoteid = 0;
+                }
             }
         }
 
