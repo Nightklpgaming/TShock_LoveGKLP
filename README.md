@@ -1,4 +1,4 @@
-# TShock_LoveGKLP
+# TShock_LoveGKLP ( v 1.0.1 )
 A simple plugin for players to have love ( best use for valentines )
 
 
